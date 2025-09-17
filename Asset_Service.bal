@@ -35,6 +35,11 @@ table<Asset> key(assetTag) assetTable = table [
 
 ];
 
-service /assets on new http:Listener(10000) {
+function parseStringDate(string date) returns time:Utc|error{
+
+    string correctDateFormat = date + "T00:00:00Z";
+    return time:utcFromString(correctDateFormat);
+}
+service /assets on new http:Listener(8080) {
    
 }
