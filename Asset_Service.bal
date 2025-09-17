@@ -1,110 +1,40 @@
 import ballerina/http;
-import ballerina/lang.value;
+import ballerina/time;
 
-type Component record {|
-    string id;
-    string name;
-|};
 
-type Schedule record {|
-    string id;
-    string nextDueDate; 
-|};
 
-type Asset record {|
-    string assetTag;
+type Asset record {
+    readonly int assetTag;
     string name;
     string faculty;
     string department;
-    string status; 
-    string acquiredDate;
-    Component[] components = [];
-    Schedule[] schedules = [];
-|};
+    string current_status; //INACTIVE, ACTIVE, DISPOSED
+    string dateAcquired;
+    Schedule[] schedules; //[{"scheduleID":1, "dueBy":"2025-09-10"}, {}, {}]
+    string[] components;  //["hard drive","power supply", "cooling fan"]
+    WorkOrder[] workOrders;
+};
+type Schedule record {
+    int scheduleID;
+    string dueBy; 
+};
 
-map<Asset> assets = {};
+type Task record{
+    int taksID;
+    string description;
+};
+type WorkOrder record{
+    int wordOrderID;
+    string description;
+    string status;
+    string taskID;
+    Task[] tasks;
+};
+
+table<Asset> key(assetTag) assetTable = table [
+
+];
 
 service /assets on new http:Listener(10000) {
-
-    // Create asset
-    resource function post .(http:Request req) returns http:Response|error {
-        json payload = check req.getJsonPayload();
-        if payload is map<json> {
-            Asset asset = {
-                assetTag: <string>payload["assetTag"],
-                name: <string>payload["name"],
-                faculty: <string>payload["faculty"],
-                department: <string>payload["department"],
-                status: <string>payload["status"],
-                acquiredDate: <string>payload["acquiredDate"],
-                components: [],
-                schedules: []
-            };
-            lock {
-                assets[asset.assetTag] = asset;
-            }
-
-            http:Response res = new;
-            res.statusCode = 201;
-            json|error jsonPayload = value:toJson(asset);
-            if jsonPayload is error {
-                res.statusCode = 500;
-                res.setJsonPayload({"error":"Failed to convert asset to JSON"});
-                return res;
-            }
-            res.setJsonPayload(jsonPayload);
-            return res;
-        }
-
-        http:Response res = new;
-        res.statusCode = 400;
-        res.setJsonPayload({"error":"Invalid payload"});
-        return res;
-    }
-
-    // Get all assets
-    resource function get .() returns http:Response {
-        Asset[] list = [];
-        lock {
-            foreach var [_, a] in assets.entries() {
-                list.push(a);
-            }
-        }
-        http:Response res = new;
-        res.statusCode = 200;
-        json|error jsonPayload = value:toJson(list);
-        if jsonPayload is error {
-            res.statusCode = 500;
-            res.setJsonPayload({"error":"Failed to convert assets to JSON"});
-            return res;
-        }
-        res.setJsonPayload(jsonPayload);
-        return res;
-    }
-
-    // Get single asset by assetTag
-    resource function get [string assetTag]() returns http:Response {
-        lock {
-            Asset? a = assets[assetTag];
-            if a is Asset {
-                http:Response res = new;
-                res.statusCode = 200;
-                json|error jsonPayload = value:toJson(a);
-                if jsonPayload is error {
-                    res.statusCode = 500;
-                    res.setJsonPayload({"error": "Failed to convert asset to JSON"});
-                    return res;
-                }
-                res.setJsonPayload(jsonPayload);
-                return res;
-            }
-        }
-        http:Response res = new;
-        res.statusCode = 404;
-        res.setJsonPayload({"error": "Asset not found"});
-        return res;
-    }
-
    
-
 }
