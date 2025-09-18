@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package carrental;
+
+option java_package = "org.example.carrental";
+option java_multiple_files = true;
+
+// Car and User models (same as Ballerina)
+message Car {
+  string plate = 1;
+  string make = 2;
+  string model = 3;
+  int32 year = 4;
+  double daily_price = 5;
+  int32 mileage = 6;
+  string status = 7; // String instead of enum
+}
+
+message User {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  bool is_admin = 4;
+}
+
+message CartEntry {
+  string plate = 1;
+  string start_date = 2;
+  string end_date = 3;
+}
+
+message Reservation {
+  string reservation_id = 1;
+  string user_id = 2;
+  repeated CartEntry items = 3;
+  double total_price = 4;
+}
+
+// Generic response (matches map<any> style)
+message GenericResponse {
+  bool ok = 1;
+  string message = 2;
+  string reservation_id = 3;
+}
+
+// Requests
+message UpdateCarRequest {}
+message AvailableFilter {
+  string text = 1;
+}
+message SearchCarRequest {
+  string plate = 1;
+}
+message CartItem {
+  string user_id = 1;
+  string plate = 2;
+  string start_date = 3;
+  string end_date = 4;
+}
+
+service CarRental {
+  rpc AddCar(Car) returns (GenericResponse);
+  rpc CreateUsers(stream User) returns (GenericResponse);
+  rpc UpdateCar(UpdateCarRequest) returns (GenericResponse);
+  rpc RemoveCar(Car) returns (GenericResponse);
+
+  rpc ListAvailableCars(AvailableFilter) returns (stream Car);
+  rpc SearchCar(SearchCarRequest) returns (GenericResponse);
+
+  rpc AddToCart(CartItem) returns (GenericResponse);
+  rpc PlaceReservation(User) returns (GenericResponse);
+}
+
