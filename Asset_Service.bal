@@ -45,6 +45,15 @@ table<Asset> key(assetTag) assetTable = table [
     
 ];
 
-service /NUST on new http:Listener(port){
+function parseStringDate(string date) returns time:Utc|error{
     
+    string correctDateFormat = date + "T00:00:00Z";
+    //2025-09-10T00:00:00Z
+    // return time:utcFromString(correctDateFormat);
+    time:Utc utcDateFormat; 
+    return time:utcFromString(correctDateFormat); 
+}
+service /NUST on new http:Listener(port){
+
+
 }
