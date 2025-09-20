@@ -54,6 +54,25 @@ function parseStringDate(string date) returns time:Utc|error{
     return time:utcFromString(correctDateFormat); 
 }
 service /NUST on new http:Listener(port){
+    resource function GET returnOverdueAssets() returns Asset[]|string{
+        Asset[] overdueItems = [];
+        time:Utc currentTime = time:utcNow();
+        foreach Asset asset in assetTable{
+            foreach Schedule scheduleString in asset.schedules {
 
-
+                time:Utc|error scheduleDate = parseStringDate(scheduleString.dueBy);
+    
+                if(scheduleDate is time:Utc){
+                    // Compare ISO-8601 strings; utcToString produces "YYYY-MM-DDTHH:MM:SSZ" so lexicographic comparison works
+                    string scheduleIso = time:utcToString(scheduleDate);
+                    string currentIso = time:utcToString(currentTime);
+                    if (scheduleIso < currentIso) {
+                        overdueItems.push(asset);
+                        break;
+                    }
+                }
+            }
+        }
+        return overdueItems;
+    }
 }
