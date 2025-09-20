@@ -1,110 +1,50 @@
+//import ballerina/io;
+import ballerina/time;
 import ballerina/http;
-import ballerina/lang.value;
 
-type Component record {|
-    string id;
-    string name;
-|};
+int port = 8080;
 
-type Schedule record {|
-    string id;
-    string nextDueDate; 
-|};
+//time:Date myDate = check time:createDate(2025, 9, 12);
 
-type Asset record {|
-    string assetTag;
+public type Asset record{
+
+    readonly int assetTag;
     string name;
     string faculty;
     string department;
-    string status; 
-    string acquiredDate;
-    Component[] components = [];
-    Schedule[] schedules = [];
-|};
+    string current_status;
+    string dateAcquired;
+    Schedule[] schedules;
+    string[] components;
+    WorkOrder[] workOrders;
 
-map<Asset> assets = {};
+};
 
-service /assets on new http:Listener(10000) {
+public type Schedule record{
 
-    // Create asset
-    resource function post .(http:Request req) returns http:Response|error {
-        json payload = check req.getJsonPayload();
-        if payload is map<json> {
-            Asset asset = {
-                assetTag: <string>payload["assetTag"],
-                name: <string>payload["name"],
-                faculty: <string>payload["faculty"],
-                department: <string>payload["department"],
-                status: <string>payload["status"],
-                acquiredDate: <string>payload["acquiredDate"],
-                components: [],
-                schedules: []
-            };
-            lock {
-                assets[asset.assetTag] = asset;
-            }
+    readonly int scheduleID;
+    string dueBy;
 
-            http:Response res = new;
-            res.statusCode = 201;
-            json|error jsonPayload = value:toJson(asset);
-            if jsonPayload is error {
-                res.statusCode = 500;
-                res.setJsonPayload({"error":"Failed to convert asset to JSON"});
-                return res;
-            }
-            res.setJsonPayload(jsonPayload);
-            return res;
-        }
+};
+public type WorkOrder record{
 
-        http:Response res = new;
-        res.statusCode = 400;
-        res.setJsonPayload({"error":"Invalid payload"});
-        return res;
-    }
+    readonly int workOrderID;
+    string description;
+    string status;
+    string taskID;
+    Task[] tasks;
+};
 
-    // Get all assets
-    resource function get .() returns http:Response {
-        Asset[] list = [];
-        lock {
-            foreach var [_, a] in assets.entries() {
-                list.push(a);
-            }
-        }
-        http:Response res = new;
-        res.statusCode = 200;
-        json|error jsonPayload = value:toJson(list);
-        if jsonPayload is error {
-            res.statusCode = 500;
-            res.setJsonPayload({"error":"Failed to convert assets to JSON"});
-            return res;
-        }
-        res.setJsonPayload(jsonPayload);
-        return res;
-    }
+public type Task record{
 
-    // Get single asset by assetTag
-    resource function get [string assetTag]() returns http:Response {
-        lock {
-            Asset? a = assets[assetTag];
-            if a is Asset {
-                http:Response res = new;
-                res.statusCode = 200;
-                json|error jsonPayload = value:toJson(a);
-                if jsonPayload is error {
-                    res.statusCode = 500;
-                    res.setJsonPayload({"error": "Failed to convert asset to JSON"});
-                    return res;
-                }
-                res.setJsonPayload(jsonPayload);
-                return res;
-            }
-        }
-        http:Response res = new;
-        res.statusCode = 404;
-        res.setJsonPayload({"error": "Asset not found"});
-        return res;
-    }
+    readonly int taskID;
+    string description;
+};
 
-   
+table<Asset> key(assetTag) assetTable = table [
+    
+];
 
+service /NUST on new http:Listener(port){
+    
 }
