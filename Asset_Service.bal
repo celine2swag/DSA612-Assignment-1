@@ -98,6 +98,19 @@ service /NUST on new http:Listener(port){
         }
         return "Asset updated successfully";
     } 
+ resource function PUT updateAssetStatus/[int id]/[string status]() returns string|http:NotFound{
+        if(!assetTable.hasKey(id)){
+            return http:NOT_FOUND;
+        }
+        else{
+            foreach Asset asset in assetTable{
+                if(asset.assetTag==id){
+                    asset.current_status=status;
+                }
+            }
+        }
+        return "Status has been updated successfully";
+    }
 
     resource function GET returnOverdueAssets() returns Asset[]|string{
         Asset[] overdueItems = [];
