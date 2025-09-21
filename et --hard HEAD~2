@@ -1,0 +1,13 @@
+[33mb0f5a3a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Added both viewAssets functions
+[33m6cab9aa[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Added the add asset function that takes in an http payload and adds it to our table
+[33m742ac35[m Defined 2 folders: proto and storage
+[33mb96b09d[m Created 2 new projects:carRentalSystem and carRentalClient
+[33m45471df[m Implemented the returnOverdueAssets that uses the helper function
+[33m1eae1ab[m Created a helper function that parses the date passed in as a string
+[33m7bb906e[m Defined the records we're going to use aswell as the database
+[33mfeca55d[m Merge pull request #2 from celine2swag/Asset-API
+[33m91c4c77[m[33m ([m[1;31morigin/Asset-API[m[33m)[m the create code. And as for the client, this is just a stand-in. We can later change the values inside and make it more personal
+[33mb8d640f[m Delete asset_api directory
+[33m23b2eb0[m Merge pull request #1 from celine2swag/Asset-API
+[33me8d8a7a[m Add files via upload
+[33m9da8fbb[m Create README.md
