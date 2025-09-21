@@ -82,6 +82,35 @@ service /NUST on new http:Listener(port){
         return assetList;
     }
 
+    resource function PUT updateAssetName/[int assetTag]/[string newName]() returns string|http:NotFound {
+        //Asset asset;
+        boolean found = false;
+        foreach Asset asset in assetTable{
+            if(asset.assetTag==assetTag){
+                asset.name=newName;
+                found=true;
+                break;
+            }
+        }
+        if(found!=true){
+            return "Does not exist!!!";
+        }
+        return "Asset updated successfully";
+    } 
+ resource function PUT updateAssetStatus/[int id]/[string status]() returns string|http:NotFound{
+        if(!assetTable.hasKey(id)){
+            return http:NOT_FOUND;
+        }
+        else{
+            foreach Asset asset in assetTable{
+                if(asset.assetTag==id){
+                    asset.current_status=status;
+                }
+            }
+        }
+        return "Status has been updated successfully";
+    }
+
     resource function GET returnOverdueAssets() returns Asset[]|string{
         Asset[] overdueItems = [];
         time:Utc currentTime = time:utcNow();
@@ -103,4 +132,95 @@ service /NUST on new http:Listener(port){
         }
         return overdueItems;
     }
+    //delete asset by id
+    resource function DELETE removeAssetByid/[int id]() returns string|http:NotFound{
+        Asset? Removedasset = assetTable.remove(id);
+        if(Removedasset is ()){
+            return "No asset with that id was found!!";
+        }else{
+        return "The removed asset id is:"+Removedasset.assetTag.toString();
+        
+}
+    }
+
+    //add component to asset by id
+       resource function POST addComponentByAsset/[int id]/[string newComponent]() returns string|http:NotFound{
+        if(!assetTable.hasKey(id)){
+            return "niggerr";
+        }
+
+        boolean duplicateExists = false;
+        foreach Asset asset in assetTable{
+            if(asset.assetTag==id){
+            foreach string component in asset.components{
+                if(component==newComponent){
+                    duplicateExists=true;
+                    return "Component already exists";
+                }
+            }
+            if(!duplicateExists==true){
+                asset.components.push(newComponent);
+            }
+            }
+        }
+        return "Component added successfully";
+}
+    resource function DELETE deleteComponent(int id, string name) returns string|http:NotFound{
+        if(!assetTable.hasKey(id)){
+            return http:NOT_FOUND;
+        }
+        boolean removed = false;
+        string removedItem;
+        foreach Asset asset in assetTable{
+            if(asset.assetTag==id){
+                int i = 0;
+                while (i < asset.components.length()) {
+                    if (asset.components[i] == name) {
+                        removedItem = asset.components.remove(i);
+                        removed = true;
+                        break;
+                    }
+                    i += 1;
+                }
+                break;
+            }
+        }
+        if (!removed) {
+            return http:NOT_FOUND;
+        }
+        return "Component removed successfully";
+    }
+
+    resource function POST addSchedule(int id, @http:Payload Schedule clientSchedule) returns string|http:NotFound{
+        if(!assetTable.hasKey(id)){
+            return http:NOT_FOUND;
+        }
+
+        foreach Asset asset in assetTable{
+            if(asset.assetTag==id){
+                asset.schedules.push(clientSchedule);
+            }
+        } 
+        return "Schedule added successfully!";
+    } 
+    
+    resource function DELETE deleteSchedule(int id, int schedulesID) returns string|http:NotFound{
+        if(!assetTable.hasKey(id)){
+            return http:NOT_FOUND;
+        }
+        Schedule removedSchedule;
+        foreach Asset asset in assetTable{
+            if(asset.assetTag==id){
+               int i = 0;
+               while(i<asset.schedules.length()){
+                if(asset.schedules[i].scheduleID==schedulesID){
+                    removedSchedule = asset.schedules.remove(i);
+                }   
+                i += 1;
+               }
+            }
+        }
+        return "Schedule deleted successfully!!!";
+    }
+
 }
