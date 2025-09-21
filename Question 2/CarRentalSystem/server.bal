@@ -8,5 +8,21 @@ listener grpc:Listener grpcListener = new (8080);
 }
 
 service "CarRental" on grpcListener {
+
+remote function addCar(AddCarRequest req) returns AddCarResponse|error {
+    storage:CarRecord car = {
+        make: req.car.make,
+        model: req.car.model,
+        year: req.car.year,
+        plateNumber: req.car.plateNumber,
+        price: req.car.price, 
+        kilos: req.car.kilos,
+        status: req.car.status
+    };
     
+    string plate = storage:addCar(car);
+    return {plate: plate};
+}
+
+
 }
