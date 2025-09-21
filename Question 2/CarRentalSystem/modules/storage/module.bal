@@ -63,7 +63,7 @@ public function removeCar(string plate) returns string|CarRecord[] {
     return remainingCars;
 }
 
-// List available cars with optional filtering by make, model, or year
+// Implemented a listAvailableCars function that lists all available cars in the inventory
 public function listAvailableCars(string filter) returns CarRecord[]|string {
     CarRecord[] availableCars = [];
     
@@ -84,4 +84,20 @@ public function listAvailableCars(string filter) returns CarRecord[]|string {
     }
     
     return availableCars;
+}
+//    return availableCars;
+public function searchCar(string plate) returns CarRecord|string {
+    CarRecord? returnedCar = cars[plate];
+    if(returnedCar is ()){
+        return "Car with that plate does not exist";
+    }
+    return returnedCar;
+}
+
+// Function to create multiple users at once
+public function createUsers(UserRecord[] newUsers) returns string {
+    foreach var user in newUsers {
+        users[user.userName] = user;
+    }
+    return newUsers.length().toString() + " users created successfully";
 }
