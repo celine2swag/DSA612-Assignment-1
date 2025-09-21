@@ -83,4 +83,23 @@ remote function listAvailableCars(ListAllCarsRequest req) returns ListAllCarsRes
     }
 }
 
+remote function searchCar(SearchForCarRequest req) returns SearchForCarResponse|error {
+        var result = storage:searchCar(req.plateNumber);
+        
+        if(result is string){
+            return error("Car not found: " + result);
+        } else {
+            Car pbCar = {
+                make: result.make,
+                model: result.model,
+                year: result.year,
+                plateNumber: result.plateNumber,
+                price: result.price, 
+                kilos: result.kilos,
+                status: result.status
+            };
+            return {car: pbCar};
+        }
+    }
+
 }
