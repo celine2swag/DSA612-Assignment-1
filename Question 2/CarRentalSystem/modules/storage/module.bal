@@ -85,7 +85,7 @@ public function listAvailableCars(string filter) returns CarRecord[]|string {
     
     return availableCars;
 }
-//    return availableCars;
+//    return availableCars
 public function searchCar(string plate) returns CarRecord|string {
     CarRecord? returnedCar = cars[plate];
     if(returnedCar is ()){
@@ -99,5 +99,6 @@ public function createUsers(UserRecord[] newUsers) returns string {
     foreach var user in newUsers {
         users[user.userName] = user;
     }
+    
     return newUsers.length().toString() + " users created successfully";
 }
