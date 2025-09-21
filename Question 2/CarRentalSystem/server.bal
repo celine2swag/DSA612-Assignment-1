@@ -127,4 +127,27 @@ remote function placeReservation(PlaceReservationRequest req) returns PlaceReser
         };
     }
 
+//creating Users via Client Streaming
+    remote function createUsers(stream<User, error?> clientStream) returns CreateUsersResponse|error {
+        User[] newUsers = [];
+        error? streamError = clientStream.forEach(function(User user) {
+            newUsers.push(user);
+        });
+        
+        if(streamError is error){
+            return error("Error processing user stream: " + streamError.message());
+        }
+        
+        // Converting the protobuf users to storage users
+        storage:UserRecord[] storageUsers = [];
+        foreach var user in newUsers {
+            storageUsers.push({
+                userName: user.userName,
+                role: user.role
+            });
+        }
+        
+        string message = storage:createUsers(storageUsers);
+        return {message: message};
+    }
 }
