@@ -102,4 +102,16 @@ remote function searchCar(SearchForCarRequest req) returns SearchForCarResponse|
         }
     }
 
+// Add To Cart
+    remote function addToCart(AddToCartRequest req) returns AddToCartResponse|error {
+        storage:CartItem item = {
+            plateNumber: req.item.plateNumber,
+            startingDate: req.item.startingDate,
+            endingDate: req.item.endingDate
+        };
+        
+        string message = storage:addToCart(req.user, item);
+        return {message: message, item: req.item};
+    }
+
 }
