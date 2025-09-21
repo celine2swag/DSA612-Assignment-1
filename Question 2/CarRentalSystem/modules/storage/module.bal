@@ -99,6 +99,38 @@ public function createUsers(UserRecord[] newUsers) returns string {
     foreach var user in newUsers {
         users[user.userName] = user;
     }
-    
+
     return newUsers.length().toString() + " users created successfully";
+}
+
+public function addToCart(string username, CartItem item) returns string {
+    if(!users.hasKey(username)){
+        return "User with username " + username + " does not exist!!!";
+    }
+
+    CarRecord? foundCar = cars[item.plateNumber];
+    if(foundCar is ()){
+        return "Car does not exist";
+    }
+    
+
+    CarRecord car = foundCar;
+    if(car.status != "AVAILABLE"){
+        return "That car is currently not available";
+    }
+    
+    int|error days = calculateDays(item.startingDate, item.endingDate);
+    if(days is error){
+        return "Invalid dates provided";
+    }
+    
+    CartItem[] existingCart = carts[username] ?: [];
+    existingCart.push(item);
+    carts[username] = existingCart;
+    
+    return "Car with plate number " + item.plateNumber + " has been added to your cart successfully!!!";
+}
+
+function calculateDays(string s, string s1) returns int|error {
+    return 0;
 }
