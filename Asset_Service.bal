@@ -103,4 +103,13 @@ service /NUST on new http:Listener(port){
         }
         return overdueItems;
     }
+    //delete asset by id
+    resource function DELETE removeAssetByid/[int id]() returns string|http:NotFound{
+        Asset? Removedasset = assetTable.remove(id);
+        if(Removedasset is ()){
+            return "No asset with that id was found!!";
+        }else{
+        return "The removed asset id is:"+Removedasset.assetTag.toString();
+        }
+    }
 }
