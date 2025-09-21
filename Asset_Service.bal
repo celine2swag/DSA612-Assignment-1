@@ -82,6 +82,23 @@ service /NUST on new http:Listener(port){
         return assetList;
     }
 
+
+    resource function PUT updateAssetName/[int assetTag]/[string newName]() returns string|http:NotFound {
+        //Asset asset;
+        boolean found = false;
+        foreach Asset asset in assetTable{
+            if(asset.assetTag==assetTag){
+                asset.name=newName;
+                found=true;
+                break;
+            }
+        }
+        if(found!=true){
+            return "Does not exist!!!";
+        }
+        return "Asset updated successfully";
+    } 
+
     resource function GET returnOverdueAssets() returns Asset[]|string{
         Asset[] overdueItems = [];
         time:Utc currentTime = time:utcNow();
