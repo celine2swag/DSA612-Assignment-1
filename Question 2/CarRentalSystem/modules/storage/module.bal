@@ -39,3 +39,11 @@ public function addCar(CarRecord car) returns string {
     cars[car.plateNumber] = car;
     return car.plateNumber;
 }
+
+public function updateCar(CarRecord car) returns string {
+    if(!cars.hasKey(car.plateNumber)){
+        return "Car with plate number " + car.plateNumber + " does not exist!!!";
+    }
+    cars[car.plateNumber] = car;
+    return "Car with plate number " + car.plateNumber + " updated successfully!!!";
+}
