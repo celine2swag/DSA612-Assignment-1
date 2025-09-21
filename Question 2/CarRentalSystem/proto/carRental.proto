@@ -1,0 +1,95 @@
+syntax = "proto3";
+package carrental;
+
+message Car {
+    string make = 1;
+    string model = 2;
+    int32 year = 3;
+    string plateNumber = 4;
+    double price = 5;
+    int32 kilos = 6;
+    string status = 7;
+}
+
+message User {
+    string userName = 1;
+    string role = 2;
+}
+
+message ItemInCart {
+    string plateNumber = 1;
+    string startingDate = 2;
+    string endingDate = 3;
+}
+
+message Reservation {
+    string userName = 1;
+    repeated ItemInCart items = 2;
+    double totalPrice = 3;
+    string status = 4;
+}
+
+message AddCarRequest {
+    Car car = 1;
+}
+
+message AddCarResponse {
+    string plate = 1;
+}
+
+message UpdateCarRequest {
+    Car car = 1;
+}
+
+message UpdateCarResponse {
+    string message = 1;
+}
+
+message RemoveCarRequest {
+    string plate = 1;
+}
+
+message RemoveCarResponse {
+    string message = 1;
+    repeated Car cars = 2;
+}
+
+message ListAllCarsRequest {
+    string filter = 1;
+}
+
+message ListAllCarsResponse {
+    repeated Car cars = 1;
+}
+
+message SearchForCarRequest {
+    string plateNumber = 1;
+}
+
+message SearchForCarResponse {
+    Car car = 1;
+}
+
+message AddToCartRequest {
+    ItemInCart item = 1;
+    string user = 2;
+}
+
+message AddToCartResponse {
+    string message = 1;
+    ItemInCart item = 2;
+}
+
+message PlaceReservationRequest {
+    string userName = 1;
+}
+
+message PlaceReservationResponse {
+    string confirmation = 1;
+    double totalPrice = 2;
+}
+
+message CreateUsersResponse {
+    string message = 1;
+}
+
