@@ -114,4 +114,17 @@ remote function searchCar(SearchForCarRequest req) returns SearchForCarResponse|
         return {message: message, item: req.item};
     }
 
+remote function placeReservation(PlaceReservationRequest req) returns PlaceReservationResponse|error {
+        var result = storage:placeReservation(req.userName);
+        
+        if(result is error){
+            return error(result.message());
+        }
+        
+        return {
+            confirmation: result.confirmation,
+            totalPrice: result.totalPrice 
+        };
+    }
+
 }
