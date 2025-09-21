@@ -103,6 +103,7 @@ public function createUsers(UserRecord[] newUsers) returns string {
     return newUsers.length().toString() + " users created successfully";
 }
 
+// Function to add a car to a user's cart
 public function addToCart(string username, CartItem item) returns string {
     if(!users.hasKey(username)){
         return "User with username " + username + " does not exist!!!";
@@ -131,6 +132,8 @@ public function addToCart(string username, CartItem item) returns string {
     return "Car with plate number " + item.plateNumber + " has been added to your cart successfully!!!";
 }
 
+// Helper function to calculate the number of days between two dates
 function calculateDays(string s, string s1) returns int|error {
     return 0;
+    
 }
