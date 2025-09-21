@@ -65,6 +65,23 @@ service /NUST on new http:Listener(port){
         return "Asset has been added successfully!!!";
     } 
 
+    resource function GET viewAssets() returns Asset[]{
+            return assetTable.toArray();
+    }
+
+    resource function GET viewAssetsByFaculty/[string faculty]() returns Asset[]|http:NotFound{
+        Asset[] assetList = [];
+        foreach Asset asset in assetTable{
+            if(asset.faculty == faculty){
+                assetList.push(asset);
+            }
+        }
+        if(assetList.length()<1){
+            return http:NOT_FOUND;
+        }
+        return assetList;
+    }
+
     resource function GET returnOverdueAssets() returns Asset[]|string{
         Asset[] overdueItems = [];
         time:Utc currentTime = time:utcNow();
