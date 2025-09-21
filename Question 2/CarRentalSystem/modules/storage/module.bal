@@ -47,3 +47,18 @@ public function updateCar(CarRecord car) returns string {
     cars[car.plateNumber] = car;
     return "Car with plate number " + car.plateNumber + " updated successfully!!!";
 }
+
+public function removeCar(string plate) returns string|CarRecord[] {
+    if(!cars.hasKey(plate)){
+        return "That car does not exist";
+    }
+    CarRecord removedCar;
+    removedCar = cars.remove(plate);
+    
+    CarRecord[] remainingCars = [];
+    foreach CarRecord car in cars{
+        remainingCars.push(car);
+    }
+    
+    return remainingCars;
+}
