@@ -127,7 +127,7 @@ public function addToCart(string username, CartItem item) returns string {
     
     CartItem[] existingCart = carts[username] ?: [];
     existingCart.push(item);
-    carts[username] = existingCart;
+    carts[username] = existingCart; 
     
     return "Car with plate number " + item.plateNumber + " has been added to your cart successfully!!!";
 }
@@ -135,5 +135,4 @@ public function addToCart(string username, CartItem item) returns string {
 // Helper function to calculate the number of days between two dates
 function calculateDays(string s, string s1) returns int|error {
     return 0;
-    
 }
