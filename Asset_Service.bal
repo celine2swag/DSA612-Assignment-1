@@ -110,6 +110,30 @@ service /NUST on new http:Listener(port){
             return "No asset with that id was found!!";
         }else{
         return "The removed asset id is:"+Removedasset.assetTag.toString();
-        }
-    }
+        
+}
+    }
+
+    //add component to asset by id
+       resource function POST addComponentByAsset/[int id]/[string newComponent]() returns string|http:NotFound{
+        if(!assetTable.hasKey(id)){
+            return "niggerr";
+        }
+
+        boolean duplicateExists = false;
+        foreach Asset asset in assetTable{
+            if(asset.assetTag==id){
+            foreach string component in asset.components{
+                if(component==newComponent){
+                    duplicateExists=true;
+                    return "Component already exists";
+                }
+            }
+            if(!duplicateExists==true){
+                asset.components.push(newComponent);
+            }
+            }
+        }
+        return "Component added successfully";
+}
 }
