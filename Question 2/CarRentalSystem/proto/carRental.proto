@@ -93,3 +93,13 @@ message CreateUsersResponse {
     string message = 1;
 }
 
+service CarRental {
+    rpc addCar(AddCarRequest) returns (AddCarResponse);
+    rpc createUsers(stream User) returns (CreateUsersResponse);
+    rpc updateCar(UpdateCarRequest) returns (UpdateCarResponse);
+    rpc removeCar(RemoveCarRequest) returns (RemoveCarResponse);
+    rpc listAvailableCars(ListAllCarsRequest) returns (ListAllCarsResponse);
+    rpc searchCar(SearchForCarRequest) returns (SearchForCarResponse);
+    rpc addToCart(AddToCartRequest) returns (AddToCartResponse);
+    rpc placeReservation(PlaceReservationRequest) returns (PlaceReservationResponse);
+}
