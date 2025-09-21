@@ -54,6 +54,17 @@ function parseStringDate(string date) returns time:Utc|error{
     return time:utcFromString(correctDateFormat); 
 }
 service /NUST on new http:Listener(port){
+
+    resource function POST addAsset(@http:Payload Asset asset) returns string|error{
+
+        if(assetTable.hasKey(asset.assetTag)){
+            return "This key already exists";
+        }else{
+        assetTable.add(asset);
+        }
+        return "Asset has been added successfully!!!";
+    } 
+
     resource function GET returnOverdueAssets() returns Asset[]|string{
         Asset[] overdueItems = [];
         time:Utc currentTime = time:utcNow();
