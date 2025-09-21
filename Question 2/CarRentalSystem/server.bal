@@ -24,5 +24,21 @@ remote function addCar(AddCarRequest req) returns AddCarResponse|error {
     return {plate: plate};
 }
 
+remote function updateCar(UpdateCarRequest req) returns UpdateCarResponse|error {
+    storage:CarRecord car = {
+        make: req.car.make,
+        model: req.car.model,
+        year: req.car.year,
+        plateNumber: req.car.plateNumber,
+        price: req.car.price, 
+        kilos: req.car.kilos,
+        status: req.car.status
+    };
+    
+    string message = storage:updateCar(car);
+    return {message: message};
+}
+
+
 
 }
