@@ -31,3 +31,11 @@ public map<CarRecord> cars = {};
 public map<UserRecord> users = {};
 public map<CartItem[]> carts = {};
 public ReservationRecord[] reservations = [];
+
+public function addCar(CarRecord car) returns string {
+    if(cars.hasKey(car.plateNumber)){
+        return "Car with that plate number exists!!!";
+    }
+    cars[car.plateNumber] = car;
+    return car.plateNumber;
+}
