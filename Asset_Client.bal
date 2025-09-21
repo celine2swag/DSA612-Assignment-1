@@ -1,71 +1,79 @@
-import ballerina/http;
+The client:
 import ballerina/io;
+import ballerina/http;
 
-http:Client assetClient = check new("http://localhost:10000/assets");
+http:Client assetClient = check new ("http://localhost:8080/NUST");
 
-public function main() returns error? {
+public function main() returns error?{
 
-   
-    json newAsset = {
-        "assetTag": "EQ-001",
-        "name": "3D Printer",
-        "faculty": "Computing & Informatics",
-        "department": "Software Engineering",
-        "status": "ACTIVE",
-        "acquiredDate": "2024-03-10"
+    json asset = {
+        "assetTag":1,
+        "name":"Vehicle",
+        "faculty":"department",
+        "department":"Informatics",
+        "current_status":"INACTIVE",
+        "dateAcquired":"2025-09-09",
+        "schedules":[],
+        "components":["Dashboard"],
+        "workOrders":[]
+        
     };
 
-    http:Response createRes = check assetClient->post("/", newAsset);
-    io:println("Create Response: ", check createRes.getJsonPayload());
+    json asset1 = {
+        "assetTag":2,
+        "name":"Vehicle",
+        "faculty":"Computing&Informatics",
+        "department":"Informatics",
+        "current_status":"ACTIVE",
+        "dateAcquired":"2025-01-01",
+        "schedules":[],
+        "components":["Tire","Dashboard"],
+        "workOrders":[]
+        
+    };
+    json schedule = {
+        "scheduleID":1,
+        "dueBy":"2025-09-10"
 
-    // View all assets
-    http:Response allRes = check assetClient->get("/");
-    io:println("All Assets: ", check allRes.getJsonPayload());
-
-    // View single asset
-    http:Response singleRes = check assetClient->get("/EQ-001");
-    io:println("Single Asset: ", check singleRes.getJsonPayload());
-
-    // Update asset
-    json updatedAsset = {
-        "assetTag": "EQ-001",
-        "name": "3D Printer - Updated",
-        "faculty": "Computing & Informatics",
-        "department": "Software Engineering",
-        "status": "UNDER_REPAIR",
-        "acquiredDate": "2024-03-10"
     };
 
-    http:Response updateRes = check assetClient->put("/EQ-001", updatedAsset);
-    io:println("Update Response: ", check updateRes.getJsonPayload());
+    //json workOrder = {};
 
-    // Filter by faculty
-    http:Response facultyRes = check assetClient->get("/faculty/Computing & Informatics");
-    io:println("Assets by Faculty: ", check facultyRes.getJsonPayload());
+    string serverResponse;
 
-    // Add a component
-    json newComp = { "id": "C001", "name": "Extruder Motor" };
-    http:Response addCompRes = check assetClient->post("/EQ-001/components", newComp);
-    io:println("Add Component Response: ", check addCompRes.getJsonPayload());
+    serverResponse = check assetClient->post("/addAsset", asset);
+    io:println("response to addAsset function: ", serverResponse);
 
-    // Add a schedule
-    json newSchedule = { "id": "S001", "nextDueDate": "2024-04-01" };
-    http:Response addSchRes = check assetClient->post("/EQ-001/schedules", newSchedule);
-    io:println("Add Schedule Response: ", check addSchRes.getJsonPayload());
+    serverResponse = check assetClient->post("/addAsset", asset1);
+    io:println("response to addAsset function: ", serverResponse);
 
-    // Check overdue items
-    http:Response overdueRes = check assetClient->get("/overdue");
-    io:println("Overdue Assets: ", check overdueRes.getJsonPayload());
+    serverResponse = check assetClient->put("/updateAssetName/1/MotorVehicle", ());
+    io:println("response to updateAssetName function: ",serverResponse);
 
-    // Delete a component
-    http:Response delCompRes = check assetClient->delete("/EQ-001/components/C001");
-    io:println("Delete Component Response: ", check delCompRes.getJsonPayload());
+    serverResponse = check assetClient->put("/updateAssetStatus/1/ACTIVE",());
+    io:println("response to updateAssetStatus function: ",serverResponse);
 
-    // Delete a schedule
-    http:Response delSchRes = check assetClient->delete("/EQ-001/schedules/S001");
-    io:println("Delete Schedule Response: ", check delSchRes.getJsonPayload());
+    serverResponse = check assetClient->get("/viewAssets");
+    io:println("response toviewAssets function", serverResponse);
 
-    // Delete asset
-    http:Response delAssetRes = check assetClient->delete("/EQ-001");
-    io:println("Delete Asset Status: ", delAssetRes.statusCode.toString());
+    serverResponse = check assetClient->get("/viewAssetsByFaculty/Computing&Informatics");
+    io:println("response to viewAssetsByFaculty function", serverResponse);
+
+    serverResponse = check assetClient->post("/addComponentByAsset/1/Gearbox", ());
+    io:println("response to addComponentByAsset function: ", serverResponse);
+
+    serverResponse = check assetClient->post("/addComponentByAsset/1/HandBrake", ());
+    io:println("response to addComponentByAsset function: ", serverResponse);
+
+    serverResponse = check assetClient->post("/addComponentByAsset/1/Transmission", ());
+    io:println("response to addComponentByAsset function: ", serverResponse);
+
+    serverResponse = check assetClient->post("/addSchedule?id=1", schedule);
+    io:println("responese to addSchedule fnuction: ", serverResponse);
+
+    serverResponse = check assetClient->delete("/deleteComponent/1/HandBrake", ());
+    io:println("response to deleteComponent function: ", serverResponse);
+
+    serverResponse = check assetClient->get("/returnOverdueAssets");
+    io:println("repsonse to returnOverdueAssets function: ", serverResponse);
 }

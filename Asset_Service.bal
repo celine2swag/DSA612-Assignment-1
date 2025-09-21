@@ -1,110 +1,226 @@
+//import ballerina/io;
+import ballerina/time;
 import ballerina/http;
-import ballerina/lang.value;
 
-type Component record {|
-    string id;
-    string name;
-|};
+int port = 8080;
 
-type Schedule record {|
-    string id;
-    string nextDueDate; 
-|};
+//time:Date myDate = check time:createDate(2025, 9, 12);
 
-type Asset record {|
-    string assetTag;
+public type Asset record{
+
+    readonly int assetTag;
     string name;
     string faculty;
     string department;
-    string status; 
-    string acquiredDate;
-    Component[] components = [];
-    Schedule[] schedules = [];
-|};
+    string current_status;
+    string dateAcquired;
+    Schedule[] schedules;
+    string[] components;
+    WorkOrder[] workOrders;
 
-map<Asset> assets = {};
+};
 
-service /assets on new http:Listener(10000) {
+public type Schedule record{
 
-    // Create asset
-    resource function post .(http:Request req) returns http:Response|error {
-        json payload = check req.getJsonPayload();
-        if payload is map<json> {
-            Asset asset = {
-                assetTag: <string>payload["assetTag"],
-                name: <string>payload["name"],
-                faculty: <string>payload["faculty"],
-                department: <string>payload["department"],
-                status: <string>payload["status"],
-                acquiredDate: <string>payload["acquiredDate"],
-                components: [],
-                schedules: []
-            };
-            lock {
-                assets[asset.assetTag] = asset;
-            }
+    readonly int scheduleID;
+    string dueBy;
 
-            http:Response res = new;
-            res.statusCode = 201;
-            json|error jsonPayload = value:toJson(asset);
-            if jsonPayload is error {
-                res.statusCode = 500;
-                res.setJsonPayload({"error":"Failed to convert asset to JSON"});
-                return res;
-            }
-            res.setJsonPayload(jsonPayload);
-            return res;
+};
+public type WorkOrder record{
+
+    readonly int workOrderID;
+    string description;
+    string status;
+    string taskID;
+    Task[] tasks;
+};
+
+public type Task record{
+
+    readonly int taskID;
+    string description;
+};
+
+table<Asset> key(assetTag) assetTable = table [
+    
+];
+
+function parseStringDate(string date) returns time:Utc|error{
+    
+    string correctDateFormat = date + "T00:00:00Z";
+    //2025-09-10T00:00:00Z
+    // return time:utcFromString(correctDateFormat);
+    time:Utc utcDateFormat; 
+    return time:utcFromString(correctDateFormat); 
+}
+service /NUST on new http:Listener(port){
+
+    resource function POST addAsset(@http:Payload Asset asset) returns string|error{
+
+        if(assetTable.hasKey(asset.assetTag)){
+            return "This key already exists";
+        }else{
+        assetTable.add(asset);
         }
+        return "Asset has been added successfully!!!";
+    } 
 
-        http:Response res = new;
-        res.statusCode = 400;
-        res.setJsonPayload({"error":"Invalid payload"});
-        return res;
+    resource function GET viewAssets() returns Asset[]{
+            return assetTable.toArray();
     }
 
-    // Get all assets
-    resource function get .() returns http:Response {
-        Asset[] list = [];
-        lock {
-            foreach var [_, a] in assets.entries() {
-                list.push(a);
+    resource function GET viewAssetsByFaculty/[string faculty]() returns Asset[]|http:NotFound{
+        Asset[] assetList = [];
+        foreach Asset asset in assetTable{
+            if(asset.faculty == faculty){
+                assetList.push(asset);
             }
         }
-        http:Response res = new;
-        res.statusCode = 200;
-        json|error jsonPayload = value:toJson(list);
-        if jsonPayload is error {
-            res.statusCode = 500;
-            res.setJsonPayload({"error":"Failed to convert assets to JSON"});
-            return res;
+        if(assetList.length()<1){
+            return http:NOT_FOUND;
         }
-        res.setJsonPayload(jsonPayload);
-        return res;
+        return assetList;
     }
 
-    // Get single asset by assetTag
-    resource function get [string assetTag]() returns http:Response {
-        lock {
-            Asset? a = assets[assetTag];
-            if a is Asset {
-                http:Response res = new;
-                res.statusCode = 200;
-                json|error jsonPayload = value:toJson(a);
-                if jsonPayload is error {
-                    res.statusCode = 500;
-                    res.setJsonPayload({"error": "Failed to convert asset to JSON"});
-                    return res;
+    resource function PUT updateAssetName/[int assetTag]/[string newName]() returns string|http:NotFound {
+        //Asset asset;
+        boolean found = false;
+        foreach Asset asset in assetTable{
+            if(asset.assetTag==assetTag){
+                asset.name=newName;
+                found=true;
+                break;
+            }
+        }
+        if(found!=true){
+            return "Does not exist!!!";
+        }
+        return "Asset updated successfully";
+    } 
+ resource function PUT updateAssetStatus/[int id]/[string status]() returns string|http:NotFound{
+        if(!assetTable.hasKey(id)){
+            return http:NOT_FOUND;
+        }
+        else{
+            foreach Asset asset in assetTable{
+                if(asset.assetTag==id){
+                    asset.current_status=status;
                 }
-                res.setJsonPayload(jsonPayload);
-                return res;
             }
         }
-        http:Response res = new;
-        res.statusCode = 404;
-        res.setJsonPayload({"error": "Asset not found"});
-        return res;
+        return "Status has been updated successfully";
     }
 
-   
+    resource function GET returnOverdueAssets() returns Asset[]|string{
+        Asset[] overdueItems = [];
+        time:Utc currentTime = time:utcNow();
+        foreach Asset asset in assetTable{
+            foreach Schedule scheduleString in asset.schedules {
+
+                time:Utc|error scheduleDate = parseStringDate(scheduleString.dueBy);
+    
+                if(scheduleDate is time:Utc){
+                    // Compare ISO-8601 strings; utcToString produces "YYYY-MM-DDTHH:MM:SSZ" so lexicographic comparison works
+                    string scheduleIso = time:utcToString(scheduleDate);
+                    string currentIso = time:utcToString(currentTime);
+                    if (scheduleIso < currentIso) {
+                        overdueItems.push(asset);
+                        break;
+                    }
+                }
+            }
+        }
+        return overdueItems;
+    }
+    //delete asset by id
+    resource function DELETE removeAssetByid/[int id]() returns string|http:NotFound{
+        Asset? Removedasset = assetTable.remove(id);
+        if(Removedasset is ()){
+            return "No asset with that id was found!!";
+        }else{
+        return "The removed asset id is:"+Removedasset.assetTag.toString();
+        
+}
+    }
+
+    //add component to asset by id
+       resource function POST addComponentByAsset/[int id]/[string newComponent]() returns string|http:NotFound{
+        if(!assetTable.hasKey(id)){
+            return "niggerr";
+        }
+
+        boolean duplicateExists = false;
+        foreach Asset asset in assetTable{
+            if(asset.assetTag==id){
+            foreach string component in asset.components{
+                if(component==newComponent){
+                    duplicateExists=true;
+                    return "Component already exists";
+                }
+            }
+            if(!duplicateExists==true){
+                asset.components.push(newComponent);
+            }
+            }
+        }
+        return "Component added successfully";
+}
+    resource function DELETE deleteComponent(int id, string name) returns string|http:NotFound{
+        if(!assetTable.hasKey(id)){
+            return http:NOT_FOUND;
+        }
+        boolean removed = false;
+        string removedItem;
+        foreach Asset asset in assetTable{
+            if(asset.assetTag==id){
+                int i = 0;
+                while (i < asset.components.length()) {
+                    if (asset.components[i] == name) {
+                        removedItem = asset.components.remove(i);
+                        removed = true;
+                        break;
+                    }
+                    i += 1;
+                }
+                break;
+            }
+        }
+        if (!removed) {
+            return http:NOT_FOUND;
+        }
+        return "Component removed successfully";
+    }
+
+    resource function POST addSchedule(int id, @http:Payload Schedule clientSchedule) returns string|http:NotFound{
+        if(!assetTable.hasKey(id)){
+            return http:NOT_FOUND;
+        }
+
+        foreach Asset asset in assetTable{
+            if(asset.assetTag==id){
+                asset.schedules.push(clientSchedule);
+            }
+        } 
+        return "Schedule added successfully!";
+    } 
+    
+    resource function DELETE deleteSchedule(int id, int schedulesID) returns string|http:NotFound{
+        if(!assetTable.hasKey(id)){
+            return http:NOT_FOUND;
+        }
+        Schedule removedSchedule;
+        foreach Asset asset in assetTable{
+            if(asset.assetTag==id){
+               int i = 0;
+               while(i<asset.schedules.length()){
+                if(asset.schedules[i].scheduleID==schedulesID){
+                    removedSchedule = asset.schedules.remove(i);
+                }   
+                i += 1;
+               }
+            }
+        }
+        return "Schedule deleted successfully!!!";
+    }
 
 }
