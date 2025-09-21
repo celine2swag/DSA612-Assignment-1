@@ -62,3 +62,26 @@ public function removeCar(string plate) returns string|CarRecord[] {
     
     return remainingCars;
 }
+
+// List available cars with optional filtering by make, model, or year
+public function listAvailableCars(string filter) returns CarRecord[]|string {
+    CarRecord[] availableCars = [];
+    
+    if(cars.length() == 0){
+        return "There are currently no cars in the inventory!!!";
+    }
+    
+    foreach CarRecord car in cars{
+        if(car.status == "AVAILABLE"){
+            if(filter == "" || car.make.includes(filter) || car.model.includes(filter) ||  car.year.toString().includes(filter)){
+                availableCars.push(car);
+            }
+        }
+    }
+    
+    if(availableCars.length() == 0){
+        return "No available cars found";
+    }
+    
+    return availableCars;
+}
