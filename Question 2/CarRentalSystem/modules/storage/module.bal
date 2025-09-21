@@ -132,7 +132,94 @@ public function addToCart(string username, CartItem item) returns string {
     return "Car with plate number " + item.plateNumber + " has been added to your cart successfully!!!";
 }
 
+//Places a reservation for a user
+//return - Reservation response or error
+public function placeReservation(string username) returns record {|
+    string confirmation;
+    float totalPrice;
+|}|error {
+    if(!users.hasKey(username)){
+        return error("No user with that username exists in our database!!!");
+    }
+    
+    //CartItem[] items = carts[username];
+    CartItem[] items = carts[username] ?: [];
+    if(items.length() == 0){
+        return error("Your cart is empty");
+    }
+    
+    float total = 0.0;
+    
+    foreach CartItem item in items {
+        CarRecord? carOpt = cars[item.plateNumber];
+        if(carOpt is ()){
+            return error("Car with plate " + item.plateNumber + " does not exist!!!");
+        }
+        
+        CarRecord car = carOpt;
+        if(car.status != "AVAILABLE"){
+            return error("Car with plate " + item.plateNumber + " is not available!!!");
+        }
+        
+        int|error daysResult = calculateDays(item.startingDate, item.endingDate);
+        if(daysResult is error){
+            return error("Invalid date entered for car " + item.plateNumber + "!!!");
+        }
+        
+        int days = daysResult;
+        total += days * car.price;
+        
+        // Mark car as unavailable
+        car.status = "UNAVAILABLE";
+        cars[item.plateNumber] = car;
+    }
+    
+    // Create reservation
+    ReservationRecord reservation = {
+        userName: username,
+        items: items,
+        totalPrice: total,
+        status: "CONFIRMED"
+    };
+    reservations.push(reservation);
+    
+    // Clear cart
+    _ = carts.remove(username);
+    
+    return {
+        confirmation: "Reservation confirmed for " + username,
+        totalPrice: total
+    };
+}
+
+
 // Helper function to calculate the number of days between two dates
-function calculateDays(string s, string s1) returns int|error {
-    return 0;
+function calculateDays(string startDateStr, string endDateStr) returns int|error {
+    [int, decimal]|error startDate = time:utcFromString(startDateStr + "T00:00:00Z");
+    [int, decimal]|error endDate = time:utcFromString(endDateStr + "T00:00:00Z");
+    
+    if startDate is error || endDate is error {
+        return error("Invalid date format");
+    }
+    
+    [int, decimal]|error startTuple=startDate;
+    [int, decimal]|error endTuple = endDate;
+
+    if(startTuple is error){
+        return error("Invalid starting Date");
+    }
+    if(endTuple is error){
+        return error("Invalid ending date");
+    }
+
+    int startSec = startTuple[0];
+    int endSec = endTuple[0];
+    
+    int diffSeconds = endSec-startSec;
+    if diffSeconds < 0 {
+        return error("End date must be after start date");
+    }
+    
+    int days = (diffSeconds / 86400) + 1;
+    return days;
 }
