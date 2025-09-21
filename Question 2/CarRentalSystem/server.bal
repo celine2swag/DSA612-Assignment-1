@@ -1,5 +1,12 @@
-import ballerina/io;
+import ballerina/grpc;
+import CarRentalSystem.storage;
 
-public function main() {
-    io:println("Hello, World!");
+listener grpc:Listener grpcListener = new (8080);
+
+@grpc:ServiceDescriptor {
+    descriptor: CARRENTAL_DESC
+}
+
+service "CarRental" on grpcListener {
+    
 }
