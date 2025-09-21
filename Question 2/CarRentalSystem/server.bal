@@ -61,6 +61,26 @@ remote function removeCar(RemoveCarRequest req) returns RemoveCarResponse|error 
     }
 }
 
-
+remote function listAvailableCars(ListAllCarsRequest req) returns ListAllCarsResponse|error {
+    var result = storage:listAvailableCars(req.filter);
+    
+    if(result is string){
+        return {cars: []};
+    } else {
+        Car[] pbCars = [];
+        foreach var car in result {
+            pbCars.push({
+                make: car.make,
+                model: car.model,
+                year: car.year,
+                plateNumber: car.plateNumber,
+                price: car.price,
+                kilos: car.kilos,
+                status: car.status
+            });
+        }
+        return {cars: pbCars};
+    }
+}
 
 }
